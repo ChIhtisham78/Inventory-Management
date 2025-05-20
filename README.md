@@ -16,12 +16,17 @@ Stock Count & Advanced Reporting
 
 User Management, Roles, Logging, and System Settings
 
-▶️ Getting Started
-Open in Visual Studio
+▶️ Getting started is **easy**! Thanks to **Monolithic Clean Architecture**, everything is structured and streamlined. Plus, even though this project uses a **modern JavaScript framework like Vue.js**, it **does not require a build system**—just use Visual Studio to run and build effortlessly.  
 
-Set your connection string in appsettings.json
+1. Open the project using Visual Studio.  
+2. Update the connection string in `appsettings.json` to match your SQL Server database.  
+3. Clean and build the solution:  
+   - Right-click the solution > Clean  
+   - Right-click the solution > Build  
+4. Run the project:  
+   - Click the green "play" button in the Visual Studio toolbar.  
 
-Clean, Build, and Run
+> **Note**: The database will be created automatically if it does not exist.  
 
 💡 The DB auto-creates if not present.
 
