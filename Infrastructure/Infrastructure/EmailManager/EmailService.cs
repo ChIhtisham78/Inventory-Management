@@ -17,33 +17,37 @@ public class EmailService : IEmailService
         _smtpSettings = smtpSettings.Value;
     }
 
-    public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+    public async Task SendEmailAsync(string recipientEmail, string subject, string htmlBody)
     {
         try
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("noreply", _smtpSettings.UserName));
-            message.To.Add(new MailboxAddress(email, email));
-            message.Subject = subject;
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(MailboxAddress.Parse(_smtpSettings.UserName));
+            emailMessage.To.Add(MailboxAddress.Parse(recipientEmail));
+            emailMessage.Subject = subject;
 
             var bodyBuilder = new BodyBuilder
             {
-                HtmlBody = htmlMessage
+                HtmlBody = htmlBody
             };
+            emailMessage.Body = bodyBuilder.ToMessageBody();
 
-            message.Body = bodyBuilder.ToMessageBody();
+            using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
 
-            using (var client = new MailKit.Net.Smtp.SmtpClient())
-            {
-                await client.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, true);
-                await client.AuthenticateAsync(_smtpSettings.UserName, _smtpSettings.Password);
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-            }
+            smtpClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+            await smtpClient.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, MailKit.Security.SecureSocketOptions.SslOnConnect);
+            await smtpClient.AuthenticateAsync(_smtpSettings.UserName, _smtpSettings.Password);
+            await smtpClient.SendAsync(emailMessage);
+            await smtpClient.DisconnectAsync(true);
+
+            _logger.LogInformation("Email successfully sent to {RecipientEmail}", recipientEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email.");
+            _logger.LogError(ex, "An error occurred while sending email to {RecipientEmail}", recipientEmail);
+            throw;
         }
     }
+
 }
