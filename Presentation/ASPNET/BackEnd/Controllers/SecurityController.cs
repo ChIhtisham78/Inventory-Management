@@ -1,4 +1,5 @@
-﻿using Application.Features.SecurityManager.Commands;
+﻿using Application.Common.Services.SecurityManager;
+using Application.Features.SecurityManager.Commands;
 using Application.Features.SecurityManager.Queries;
 using ASPNET.BackEnd.Common.Base;
 using ASPNET.BackEnd.Common.Models;
@@ -171,12 +172,9 @@ public class SecurityController : BaseApiController
 
     [Authorize]
     [HttpPost("UpdateMyProfile")]
-    public async Task<ActionResult<ApiSuccessResult<UpdateMyProfileResult>>> UpdateMyProfileAsync(
-        UpdateMyProfileRequest request,
-        CancellationToken cancellationToken
-        )
+    public async Task<ActionResult<ApiSuccessResult<UpdateMyProfileResult>>> UpdateMyProfileAsync(UpdateUserProfileDTO profileDTO, CancellationToken cancellationToken)
     {
-        var response = await _sender.Send(request, cancellationToken);
+        var response = await _sender.Send(profileDTO, cancellationToken);
 
         return Ok(new ApiSuccessResult<UpdateMyProfileResult>
         {
@@ -259,12 +257,9 @@ public class SecurityController : BaseApiController
 
     [Authorize]
     [HttpPost("UpdateUser")]
-    public async Task<ActionResult<ApiSuccessResult<UpdateUserResult>>> UpdateUserAsync(
-        UpdateUserRequest request,
-        CancellationToken cancellationToken
-        )
+    public async Task<ActionResult<ApiSuccessResult<UpdateUserResult>>> UpdateUserAsync(UpdateUserAsyncDTO Dto,CancellationToken cancellationToken)
     {
-        var response = await _sender.Send(request, cancellationToken);
+        var response = await _sender.Send(Dto, cancellationToken);
 
         return Ok(new ApiSuccessResult<UpdateUserResult>
         {

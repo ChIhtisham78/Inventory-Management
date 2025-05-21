@@ -10,18 +10,18 @@ public class UpdateUserResult
     public UpdateUserResultDto? Data { get; set; }
 }
 
-public class UpdateUserRequest : IRequest<UpdateUserResult>
-{
-    public string? UserId { get; init; }
-    public string? FirstName { get; init; }
-    public string? LastName { get; init; }
-    public bool? EmailConfirmed { get; init; }
-    public bool? IsBlocked { get; init; }
-    public bool? IsDeleted { get; init; }
-    public string? UpdatedById { get; init; }
-}
+//public class UpdateUserRequest : IRequest<UpdateUserResult>
+//{
+//    public string? UserId { get; init; }
+//    public string? FirstName { get; init; }
+//    public string? LastName { get; init; }
+//    public bool? EmailConfirmed { get; init; }
+//    public bool? IsBlocked { get; init; }
+//    public bool? IsDeleted { get; init; }
+//    public string? UpdatedById { get; init; }
+//}
 
-public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
+public class UpdateUserValidator : AbstractValidator<UpdateUserAsyncDTO>
 {
     public UpdateUserValidator()
     {
@@ -31,7 +31,7 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
     }
 }
 
-public class UpdateUserHandler : IRequestHandler<UpdateUserRequest, UpdateUserResult>
+public class UpdateUserHandler : IRequestHandler<UpdateUserAsyncDTO, UpdateUserResult>
 {
     private readonly ISecurityService _securityService;
 
@@ -40,18 +40,10 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserRequest, UpdateUserRe
         _securityService = securityService;
     }
 
-    public async Task<UpdateUserResult> Handle(UpdateUserRequest request, CancellationToken cancellationToken)
+    public async Task<UpdateUserResult> Handle(UpdateUserAsyncDTO Dto, CancellationToken cancellationToken)
     {
-        var result = await _securityService.UpdateUserAsync(
-            request.UserId ?? "",
-            request.FirstName ?? "",
-            request.LastName ?? "",
-            request.EmailConfirmed ?? true,
-            request.IsBlocked ?? false,
-            request.IsDeleted ?? false,
-            request.UpdatedById ?? "",
-            cancellationToken
-            );
+         Dto.CancellationToken = cancellationToken;
+        var result = await _securityService.UpdateUserAsync(Dto);
 
         return new UpdateUserResult
         {

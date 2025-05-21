@@ -358,28 +358,23 @@ public class SecurityService : ISecurityService
         return profiles;
     }
 
-    public async Task UpdateMyProfileAsync(
-        string userId,
-        string firstName,
-        string lastName,
-        string companyName,
-        CancellationToken cancellationToken
-        )
+    public async Task UpdateMyProfileAsync(UpdateUserProfileDTO profileDTO)
     {
-        var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
+        var user = await _context.Users.Where(x => x.Id == profileDTO.UserId).SingleOrDefaultAsync(profileDTO.CancellationToken);
 
         if (user == null)
         {
-            throw new Exception($"Unable to load user with id: {userId}");
+            throw new Exception($"Unable to load user with id: {profileDTO.UserId}");
         }
 
-        user.FirstName = firstName;
-        user.LastName = lastName;
-        user.CompanyName = companyName;
+        user.FirstName = profileDTO.FirstName;
+        user.LastName = profileDTO.LastName;
+        user.CompanyName = profileDTO.CompanyName;
 
         _context.Update(user);
         await _context.SaveChangesAsync();
     }
+
     public async Task ChangePasswordAsync(
         string userId,
         string oldPassword,
@@ -429,24 +424,20 @@ public class SecurityService : ISecurityService
         return roles;
     }
 
-    public async Task<List<GetUserListResultDto>> GetUserListAsync(
-        CancellationToken cancellationToken
-        )
+    public async Task<List<GetUserListResultDto>> GetUserListAsync(CancellationToken cancellationToken)
     {
-        var users = await _userManager.Users
-            .Select(x => new GetUserListResultDto
-            {
-                Id = x.Id,
-                FirstName = x.FirstName,
-                LastName = x.LastName,
-                Email = x.Email,
-                IsBlocked = x.IsBlocked,
-                IsDeleted = x.IsDeleted,
-                EmailConfirmed = x.EmailConfirmed,
-                CreatedAt = x.CreatedAt
-            })
-            .ToListAsync(cancellationToken);
-
+        var users = await _context.Users
+              .Select(x => new GetUserListResultDto
+              {
+                  Id = x.Id,
+                  FirstName = x.FirstName,
+                  LastName = x.LastName,
+                  Email = x.Email,
+                  EmailConfirmed = x.EmailConfirmed,
+                  IsBlocked = x.IsBlocked,
+                  IsDeleted = x.IsDeleted,
+                  CreatedAt = x.CreatedAt,
+              }).ToListAsync();
         return users;
     }
 
@@ -503,22 +494,13 @@ public class SecurityService : ISecurityService
         };
     }
 
-    public async Task<UpdateUserResultDto> UpdateUserAsync(
-        string userId,
-        string firstName,
-        string lastName,
-        bool emailConfirmed = true,
-        bool isBlocked = false,
-        bool isDeleted = false,
-        string updatedById = "",
-        CancellationToken cancellationToken = default
-        )
+    public async Task<UpdateUserResultDto> UpdateUserAsync(UpdateUserAsyncDTO Dto)
     {
-        var user = await _context.Users.Where(x => x.Id == userId).SingleOrDefaultAsync(cancellationToken);
+        var user = await _context.Users.Where(x => x.Id == Dto.UserId).SingleOrDefaultAsync(Dto.CancellationToken);
 
         if (user == null)
         {
-            throw new Exception($"Unable to load user with id: {userId}");
+            throw new Exception($"Unable to load user with id: {Dto.UserId}");
         }
 
         if (user.Email == _identitySettings.DefaultAdmin.Email)
@@ -526,12 +508,12 @@ public class SecurityService : ISecurityService
             throw new Exception($"Update default admin is not allowed.");
         }
 
-        user.FirstName = firstName;
-        user.LastName = lastName;
-        user.EmailConfirmed = emailConfirmed;
-        user.IsBlocked = isBlocked;
-        user.IsDeleted = isDeleted;
-        user.UpdatedById = updatedById;
+        user.FirstName = Dto.FirstName;
+        user.LastName = Dto.LastName;
+        user.EmailConfirmed = Dto.EmailConfirmed;
+        user.IsBlocked = Dto.IsBlocked;
+        user.IsDeleted = Dto.IsDeleted;
+        user.UpdatedById = Dto.UpdatedById;
 
         var result = await _userManager.UpdateAsync(user);
 

@@ -11,15 +11,7 @@ public class UpdateMyProfileResult
     public string? Data { get; init; }
 }
 
-public class UpdateMyProfileRequest : IRequest<UpdateMyProfileResult>
-{
-    public string? UserId { get; init; }
-    public string? FirstName { get; init; }
-    public string? LastName { get; init; }
-    public string? CompanyName { get; init; }
-}
-
-public class UpdateMyProfileValidator : AbstractValidator<UpdateMyProfileRequest>
+public class UpdateMyProfileValidator : AbstractValidator<UpdateUserProfileDTO>
 {
     public UpdateMyProfileValidator()
     {
@@ -29,7 +21,7 @@ public class UpdateMyProfileValidator : AbstractValidator<UpdateMyProfileRequest
     }
 }
 
-public class UpdateMyProfileHandler : IRequestHandler<UpdateMyProfileRequest, UpdateMyProfileResult>
+public class UpdateMyProfileHandler : IRequestHandler<UpdateUserProfileDTO, UpdateMyProfileResult>
 {
     private readonly ISecurityService _securityService;
 
@@ -38,15 +30,10 @@ public class UpdateMyProfileHandler : IRequestHandler<UpdateMyProfileRequest, Up
         _securityService = securityService;
     }
 
-    public async Task<UpdateMyProfileResult> Handle(UpdateMyProfileRequest request, CancellationToken cancellationToken)
+    public async Task<UpdateMyProfileResult> Handle(UpdateUserProfileDTO profileDTO,CancellationToken cancellationToken)
     {
-        await _securityService.UpdateMyProfileAsync(
-            request.UserId ?? "",
-            request.FirstName ?? "",
-            request.LastName ?? "",
-            request.CompanyName ?? "",
-            cancellationToken
-            );
+        profileDTO.CancellationToken = cancellationToken;
+        await _securityService.UpdateMyProfileAsync(profileDTO);
 
         return new UpdateMyProfileResult
         {

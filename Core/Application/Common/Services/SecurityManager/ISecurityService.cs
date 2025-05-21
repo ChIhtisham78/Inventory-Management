@@ -51,13 +51,7 @@ public interface ISecurityService
         CancellationToken cancellationToken
         );
 
-    public Task UpdateMyProfileAsync(
-        string userId,
-        string firstName,
-        string lastName,
-        string companyName,
-        CancellationToken cancellationToken
-        );
+   public Task UpdateMyProfileAsync(UpdateUserProfileDTO profileDTO);
 
     public Task ChangePasswordAsync(
         string userId,
@@ -88,16 +82,7 @@ public interface ISecurityService
         CancellationToken cancellationToken = default
         );
 
-    public Task<UpdateUserResultDto> UpdateUserAsync(
-        string userId,
-        string firstName,
-        string lastName,
-        bool emailConfirmed = true,
-        bool isBlocked = false,
-        bool isDeleted = false,
-        string updatedById = "",
-        CancellationToken cancellationToken = default
-        );
+       Task<UpdateUserResultDto> UpdateUserAsync(UpdateUserAsyncDTO Dto);
 
     public Task<DeleteUserResultDto> DeleteUserAsync(
         string userId,
