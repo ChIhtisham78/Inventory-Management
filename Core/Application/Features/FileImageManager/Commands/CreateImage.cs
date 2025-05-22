@@ -1,4 +1,5 @@
 ﻿using Application.Common.Services.FileImageManager;
+using Application.Common.Services.SecurityManager;
 using FluentValidation;
 using MediatR;
 
@@ -48,14 +49,17 @@ public class CreateImageHandler : IRequestHandler<CreateImageRequest, CreateImag
 
     public async Task<CreateImageResult> Handle(CreateImageRequest request, CancellationToken cancellationToken)
     {
-        var result = await _uploadImage.UploadAsync(
-            request.OriginalFileName,
-            request.Extension,
-            request.Data,
-            request.Size,
-            request.Description,
-            request.CreatedById,
-            cancellationToken);
+        var dto = new UploadFileAsyncDTO
+        {
+            originalFileName = request.OriginalFileName,
+            docExtension = request.Extension,
+            fileData = request.Data,
+            size = request.Size,
+            description = request.Description ?? "",
+            createdById = request.CreatedById,
+            cancellationToken = cancellationToken
+        };
+        var result = await _uploadImage.UploadAsync(dto);
 
         return new CreateImageResult { ImageName = result };
     }

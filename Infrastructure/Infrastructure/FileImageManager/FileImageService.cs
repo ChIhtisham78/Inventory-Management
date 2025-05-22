@@ -1,5 +1,6 @@
 ﻿using Application.Common.Repositories;
 using Application.Common.Services.FileImageManager;
+using Application.Common.Services.SecurityManager;
 using Domain.Entities;
 using Microsoft.Extensions.Options;
 
@@ -24,32 +25,25 @@ public class FileImageService : IFileImageService
         _docRepository = docRepository;
     }
 
-    public async Task<string> UploadAsync(
-        string? originalFileName,
-        string? docExtension,
-        byte[]? fileData,
-        long? size,
-        string? description = "",
-        string? createdById = "",
-        CancellationToken cancellationToken = default)
+    public async  Task<string> UploadAsync(UploadFileAsyncDTO uploadFile)
     {
 
-        if (string.IsNullOrWhiteSpace(docExtension) || docExtension.Contains(Path.DirectorySeparatorChar) || docExtension.Contains(Path.AltDirectorySeparatorChar))
+        if (string.IsNullOrWhiteSpace(uploadFile.docExtension) || uploadFile.docExtension.Contains(Path.DirectorySeparatorChar) || uploadFile.docExtension.Contains(Path.AltDirectorySeparatorChar))
         {
-            throw new Exception($"Invalid file extension: {nameof(docExtension)}");
+            throw new Exception($"Invalid file extension: {nameof(uploadFile.docExtension)}");
         }
 
-        if (fileData == null || fileData.Length == 0)
+        if (uploadFile.fileData! == null || uploadFile.fileData!.Length == 0)
         {
-            throw new Exception($"File data cannot be null or empty: {nameof(fileData)}");
+            throw new Exception($"File data cannot be null or empty: {nameof(uploadFile.fileData)}");
         }
 
-        if (fileData.Length > _maxFileSizeInBytes)
+        if (uploadFile.fileData.Length > _maxFileSizeInBytes)
         {
             throw new Exception($"File size exceeds the maximum allowed size of {_maxFileSizeInBytes / (1024 * 1024)} MB");
         }
 
-        var fileName = $"{Guid.NewGuid():N}.{docExtension}";
+        var fileName = $"{Guid.NewGuid():N}.{uploadFile.docExtension}";
 
         if (!Directory.Exists(_folderPath))
         {
@@ -58,19 +52,19 @@ public class FileImageService : IFileImageService
 
         var filePath = Path.Combine(_folderPath, fileName);
 
-        await File.WriteAllBytesAsync(filePath, fileData, cancellationToken);
+        await File.WriteAllBytesAsync(filePath, uploadFile.fileData, uploadFile.cancellationToken);
 
         var img = new FileImage();
         img.Name = fileName;
-        img.OriginalName = originalFileName;
-        img.Extension = docExtension;
+        img.OriginalName = uploadFile.originalFileName;
+        img.Extension = uploadFile.docExtension;
         img.GeneratedName = fileName;
-        img.FileSize = size;
-        img.Description = description;
-        img.CreatedById = createdById;
+        img.FileSize = uploadFile.size;
+        img.Description = uploadFile.description;
+        img.CreatedById = uploadFile.createdById;
 
-        await _docRepository.CreateAsync(img, cancellationToken);
-        await _unitOfWork.SaveAsync(cancellationToken);
+        await _docRepository.CreateAsync(img, uploadFile.cancellationToken);
+        await _unitOfWork.SaveAsync(uploadFile.cancellationToken);
 
         return fileName;
     }
